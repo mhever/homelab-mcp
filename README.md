@@ -70,3 +70,5 @@ Example configuration, with Claude Desktop running on Windows 11:
     }
 }
 ```
+
+Without specifing the env vars, Claude Desktop runs the process in a "sandbox" type environment. Without proper env configuration, the ssh binary included with Windows 11 was not able to even start up.
