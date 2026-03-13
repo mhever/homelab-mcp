@@ -21,6 +21,9 @@ vendor/
 .DS_Store
 Thumbs.db
 
-# Plan docs
+# Plan docs (allow key project docs)
 *.md
 !README.md
+!CLAUDE.md
+!plan.md
+!.claude/**/*.md
