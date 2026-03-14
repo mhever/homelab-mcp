@@ -4,11 +4,11 @@ A Go-based [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) serv
 
 This project is part of my professional portfolio, demonstrating Go development, systems engineering, and **agentic development workflows**.
 
-## 🚀 Current Status: Phase 1 (Complete)
+## 🚀 Current Status: Phase 2 (Complete)
 
 - [x] **Phase 0: Scaffold** - MCP SDK wiring & stdio transport.
 - [x] **Phase 1: System Tools** - `system_overview` and `system_disk` via `gopsutil`.
-- [ ] **Phase 2: Docker Tools** - (In Progress) Container management & logs.
+- [x] **Phase 2: Docker Tools** - Container management & logs.
 - [ ] **Phase 3: Kubernetes Tools** - Pods, Events, and FluxCD status.
 
 For the full implementation roadmap, see [plan.md](./plan.md).
@@ -20,6 +20,13 @@ For the full implementation roadmap, see [plan.md](./plan.md).
 |------|-------------|
 | `system_overview` | Returns CPU load, memory usage, and uptime metrics. |
 | `system_disk` | Provides a breakdown of disk usage per mount point. |
+
+### Docker Tools
+| Tool | Description |
+|------|-------------|
+| `docker_containers` | Lists all containers with name, image, status, and ports. |
+| `docker_container_logs` | Gets container logs; args: container name/ID, tail line count. |
+| `docker_container_action` | Start/stop/restart a container; args: container name/ID, action. |
 
 ## 🤖 Built with Agents
 
