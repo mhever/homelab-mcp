@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"sort"
@@ -11,7 +12,11 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	k8sapierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -23,11 +28,13 @@ type K8sClient interface {
 	GetPods(ctx context.Context, namespace string) ([]PodInfo, error)
 	GetPodLogs(ctx context.Context, namespace, pod, container string, tail int) (string, error)
 	GetEvents(ctx context.Context, namespace string) ([]EventInfo, error)
+	GetFluxStatus(ctx context.Context) ([]FluxInfo, error)
 }
 
 // RealK8sClient wraps the official Kubernetes client.
 type RealK8sClient struct {
-	clientset *kubernetes.Clientset
+	clientset     *kubernetes.Clientset
+	dynamicClient dynamic.Interface
 }
 
 // NewRealK8sClient creates a RealK8sClient, verifying cluster connectivity.
@@ -49,13 +56,18 @@ func NewRealK8sClient() (*RealK8sClient, error) {
 		return nil, fmt.Errorf("failed to create clientset: %w", err)
 	}
 
+	dynamicClient, err := dynamic.NewForConfig(config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create dynamic client: %w", err)
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if _, err = clientset.CoreV1().Namespaces().List(ctx, metav1.ListOptions{Limit: 1}); err != nil {
 		return nil, fmt.Errorf("kubernetes connectivity check failed: %w", err)
 	}
 
-	return &RealK8sClient{clientset: clientset}, nil
+	return &RealK8sClient{clientset: clientset, dynamicClient: dynamicClient}, nil
 }
 
 func (c *RealK8sClient) GetNodes(ctx context.Context) ([]NodeInfo, error) {
@@ -200,7 +212,7 @@ func (c *RealK8sClient) GetEvents(ctx context.Context, namespace string) ([]Even
 	}
 
 	// Sort most recent first; zero timestamps go last.
-	sort.Slice(withTimes, func(i, j int) bool {
+	sort.SliceStable(withTimes, func(i, j int) bool {
 		ti, tj := withTimes[i].ts, withTimes[j].ts
 		if ti.IsZero() {
 			return false
@@ -216,6 +228,108 @@ func (c *RealK8sClient) GetEvents(ctx context.Context, namespace string) ([]Even
 		result[i] = e.info
 	}
 	return result, nil
+}
+
+func (c *RealK8sClient) GetFluxStatus(ctx context.Context) ([]FluxInfo, error) {
+	var allFlux []FluxInfo
+
+	// GitRepository resources
+	gitRepoGVR := schema.GroupVersionResource{
+		Group:    "source.toolkit.fluxcd.io",
+		Version:  "v1",
+		Resource: "gitrepositories",
+	}
+	if err := c.processFluxResources(ctx, gitRepoGVR, "GitRepository", &allFlux); err != nil {
+		if k8sapierrors.IsNotFound(err) {
+			log.Printf("flux: error listing GitRepository resources (CRD may not be installed): %v", err)
+		} else {
+			return nil, fmt.Errorf("failed to list GitRepository resources: %w", err)
+		}
+	}
+
+	// Kustomization resources
+	kustomizationGVR := schema.GroupVersionResource{
+		Group:    "kustomize.toolkit.fluxcd.io",
+		Version:  "v1",
+		Resource: "kustomizations",
+	}
+	if err := c.processFluxResources(ctx, kustomizationGVR, "Kustomization", &allFlux); err != nil {
+		if k8sapierrors.IsNotFound(err) {
+			log.Printf("flux: error listing Kustomization resources (CRD may not be installed): %v", err)
+		} else {
+			return nil, fmt.Errorf("failed to list Kustomization resources: %w", err)
+		}
+	}
+
+	// Sort by Kind asc, Namespace asc, Name asc
+	sort.Slice(allFlux, func(i, j int) bool {
+		if allFlux[i].Kind != allFlux[j].Kind {
+			return allFlux[i].Kind < allFlux[j].Kind
+		}
+		if allFlux[i].Namespace != allFlux[j].Namespace {
+			return allFlux[i].Namespace < allFlux[j].Namespace
+		}
+		return allFlux[i].Name < allFlux[j].Name
+	})
+
+	return allFlux, nil
+}
+
+func (c *RealK8sClient) processFluxResources(ctx context.Context, gvr schema.GroupVersionResource, kind string, result *[]FluxInfo) error {
+	list, err := c.dynamicClient.Resource(gvr).Namespace("").List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, item := range list.Items {
+		namespace := item.GetNamespace()
+		name := item.GetName()
+		creationTimestamp := item.GetCreationTimestamp()
+
+		// Parse status conditions
+		conditions, ok, err := unstructured.NestedSlice(item.Object, "status", "conditions")
+		if err != nil || !ok {
+			*result = append(*result, FluxInfo{
+				Kind:      kind,
+				Namespace: namespace,
+				Name:      name,
+				Ready:     "Unknown",
+				Reason:    "NoStatus",
+				Message:   "",
+				Age:       formatAge(creationTimestamp.Time),
+			})
+			continue
+		}
+
+		// Find Ready condition
+		readyStatus := "Unknown"
+		reason := "NoReadyCondition"
+		message := ""
+		for _, cond := range conditions {
+			condMap, ok := cond.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			condType, _, _ := unstructured.NestedString(condMap, "type")
+			if condType == "Ready" {
+				readyStatus, _, _ = unstructured.NestedString(condMap, "status")
+				reason, _, _ = unstructured.NestedString(condMap, "reason")
+				message, _, _ = unstructured.NestedString(condMap, "message")
+				break
+			}
+		}
+
+		*result = append(*result, FluxInfo{
+			Kind:      kind,
+			Namespace: namespace,
+			Name:      name,
+			Ready:     readyStatus,
+			Reason:    reason,
+			Message:   message,
+			Age:       formatAge(creationTimestamp.Time),
+		})
+	}
+	return nil
 }
 
 // formatAge returns a human-readable duration string using the largest applicable unit.

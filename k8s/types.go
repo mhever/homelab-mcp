@@ -26,3 +26,13 @@ type EventInfo struct {
 	Message   string
 	Age       string
 }
+
+type FluxInfo struct {
+	Kind      string // "GitRepository" or "Kustomization"
+	Namespace string
+	Name      string
+	Ready     string // condition status: "True", "False", "Unknown"
+	Reason    string // condition reason
+	Message   string
+	Age       string
+}

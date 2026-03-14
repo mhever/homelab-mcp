@@ -29,7 +29,9 @@ type EventsArgs struct {
 	Type      string `json:"type,omitempty" jsonschema:"filter by type: Normal or Warning"`
 }
 
-// RegisterTools registers the four Kubernetes tools with the MCP server.
+type FluxStatusArgs struct{}
+
+// RegisterTools registers all five Kubernetes tools with the MCP server.
 func RegisterTools(server *mcp.Server, client K8sClient) {
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "k8s_cluster_overview",
@@ -57,6 +59,13 @@ func RegisterTools(server *mcp.Server, client K8sClient) {
 		Description: "List recent Kubernetes events; optionally filter by namespace or type",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, args EventsArgs) (*mcp.CallToolResult, any, error) {
 		return HandleK8sEvents(ctx, args, client)
+	})
+
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "k8s_flux_status",
+		Description: "Show FluxCD GitRepository and Kustomization reconciliation status",
+	}, func(ctx context.Context, req *mcp.CallToolRequest, args FluxStatusArgs) (*mcp.CallToolResult, any, error) {
+		return HandleFluxStatus(ctx, client)
 	})
 }
 
@@ -172,6 +181,34 @@ func HandleK8sEvents(ctx context.Context, args EventsArgs, client K8sClient) (*m
 		}
 		sb.WriteString(fmt.Sprintf("%-14s%-9s%-17s%-22s%-6s%s\n",
 			event.Namespace, event.Type, event.Reason, event.Object, event.Age, msg))
+	}
+
+	return mcputil.TextResult(sb.String())
+}
+
+// HandleFluxStatus returns FluxCD GitRepository and Kustomization resource status.
+func HandleFluxStatus(ctx context.Context, client K8sClient) (*mcp.CallToolResult, any, error) {
+	fluxResources, err := client.GetFluxStatus(ctx)
+	if err != nil {
+		return mcputil.ErrorResult(fmt.Sprintf("GetFluxStatus error: %v", err))
+	}
+
+	if len(fluxResources) == 0 {
+		return mcputil.TextResult("No FluxCD resources found")
+	}
+
+	var sb strings.Builder
+	// Column widths: KIND=18, NAMESPACE=16, NAME=26, READY=8, REASON=20, AGE=6, MESSAGE truncated to 60
+	sb.WriteString(fmt.Sprintf("%-18s%-16s%-26s%-8s%-20s%-6s%s\n",
+		"KIND", "NAMESPACE", "NAME", "READY", "REASON", "AGE", "MESSAGE"))
+
+	for _, flux := range fluxResources {
+		msg := flux.Message
+		if len(msg) > 60 {
+			msg = msg[:57] + "..."
+		}
+		sb.WriteString(fmt.Sprintf("%-18s%-16s%-26s%-8s%-20s%-6s%s\n",
+			flux.Kind, flux.Namespace, flux.Name, flux.Ready, flux.Reason, flux.Age, msg))
 	}
 
 	return mcputil.TextResult(sb.String())

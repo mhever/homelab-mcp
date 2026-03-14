@@ -46,6 +46,14 @@ func (m *MockK8sClient) GetEvents(ctx context.Context, namespace string) ([]k8s.
 	return args.Get(0).([]k8s.EventInfo), args.Error(1)
 }
 
+func (m *MockK8sClient) GetFluxStatus(ctx context.Context) ([]k8s.FluxInfo, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]k8s.FluxInfo), args.Error(1)
+}
+
 // textContent extracts the text from the first content item of a CallToolResult.
 func textContent(t *testing.T, result *mcp.CallToolResult) string {
 	t.Helper()
@@ -186,4 +194,61 @@ func TestHandleK8sEvents_TypeFilter(t *testing.T) {
 	assert.True(t, strings.Contains(output, "BackOff"))
 	assert.True(t, strings.Contains(output, "FailedMount"))
 	assert.False(t, strings.Contains(output, "Started"))
+}
+
+func TestHandleFluxStatus_Success(t *testing.T) {
+	mockClient := new(MockK8sClient)
+	mockClient.On("GetFluxStatus", mock.Anything).Return([]k8s.FluxInfo{
+		{Kind: "GitRepository", Namespace: "flux-system", Name: "my-repo", Ready: "True", Reason: "Succeeded", Message: "Fetched revision", Age: "5d"},
+		{Kind: "Kustomization", Namespace: "flux-system", Name: "apps", Ready: "True", Reason: "ReconciliationSucceeded", Message: "Applied revision", Age: "2d"},
+	}, nil)
+
+	result, _, err := k8s.HandleFluxStatus(context.Background(), mockClient)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.False(t, result.IsError)
+
+	output := textContent(t, result)
+	assert.True(t, strings.Contains(output, "my-repo"))
+	assert.True(t, strings.Contains(output, "apps"))
+}
+
+func TestHandleFluxStatus_Empty(t *testing.T) {
+	mockClient := new(MockK8sClient)
+	mockClient.On("GetFluxStatus", mock.Anything).Return([]k8s.FluxInfo{}, nil)
+
+	result, _, err := k8s.HandleFluxStatus(context.Background(), mockClient)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.False(t, result.IsError)
+
+	output := textContent(t, result)
+	assert.True(t, strings.Contains(output, "No FluxCD resources found"))
+}
+
+func TestHandleFluxStatus_Error(t *testing.T) {
+	mockClient := new(MockK8sClient)
+	mockClient.On("GetFluxStatus", mock.Anything).Return(nil, errors.New("RBAC forbidden"))
+
+	result, _, err := k8s.HandleFluxStatus(context.Background(), mockClient)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.True(t, result.IsError)
+	mockClient.AssertExpectations(t)
+}
+
+func TestHandleFluxStatus_NoReadyCondition(t *testing.T) {
+	mockClient := new(MockK8sClient)
+	mockClient.On("GetFluxStatus", mock.Anything).Return([]k8s.FluxInfo{
+		{Kind: "GitRepository", Namespace: "flux-system", Name: "homelab", Ready: "Unknown", Reason: "NoStatus", Message: "", Age: "1d"},
+	}, nil)
+
+	result, _, err := k8s.HandleFluxStatus(context.Background(), mockClient)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.False(t, result.IsError)
+
+	output := textContent(t, result)
+	assert.True(t, strings.Contains(output, "GitRepository"))
+	assert.True(t, strings.Contains(output, "Unknown"))
 }
