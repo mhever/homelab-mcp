@@ -7,7 +7,6 @@ import (
 	"io"
 	"strings"
 
-	"github.com/docker/docker/api/types"
 	"github.com/mhever/homelab-mcp/internal/mcputil"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -135,5 +134,3 @@ func HandleContainerAction(ctx context.Context, args ContainerActionArgs, client
 	return mcputil.TextResult(fmt.Sprintf("Action '%s' completed for container '%s'", args.Action, args.Container))
 }
 
-// ensure types import is used
-var _ = types.Container{}

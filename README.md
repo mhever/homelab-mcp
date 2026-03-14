@@ -30,11 +30,17 @@ For the full implementation roadmap, see [plan.md](./plan.md).
 
 ## 🤖 Built with Agents
 
-This repository is developed using a multi-agent orchestration pattern:
-- **Orchestrator:** Claude 4.6 Opus (via Claude Code) handles high-level planning and decision-making.
-- **Workers:** Gemini 3.1 Flash-Lite subagents (via `gemini-cli`) handle isolated code generation, audits, and analysis.
+This repository is developed using a multi-agent orchestration pattern where Claude acts as the orchestrator and delegates to specialist subagents:
 
-This "Hybrid AI" approach allows for high-velocity development while maintaining strict cost and quota management.
+| Role | Model | Task |
+|------|-------|------|
+| **Orchestrator** | Claude Sonnet 4.6 (Claude Code) | Planning, routing, and verification |
+| **Builder** | DeepSeek V3 (`deepseek-chat` via OpenRouter) | Code generation and file edits |
+| **Reviewer** | DeepSeek R1 (`deepseek-r1` via OpenRouter) | Logic audits, race condition detection, security review |
+| **Tester** | Gemini Flash-Lite (`gemini-3.1-flash-lite-preview`) | Unit test and mock generation |
+| **Librarian** | Gemini Flash-Lite (`gemini-3.1-flash-lite-preview`) | README and documentation sync |
+
+This "Hybrid AI" approach assigns each task to the model best suited for it, enabling high-velocity development while managing cost and quota across providers.
 
 ## 🏗️ Technical Architecture
 
