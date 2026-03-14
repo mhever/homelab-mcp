@@ -20,11 +20,3 @@ vendor/
 # OS
 .DS_Store
 Thumbs.db
-
-# Plan docs (allow key project docs)
-*.md
-!README.md
-!CLAUDE.md
-!plan.md
-!.claude/**/*.md
-!tasks/*.md

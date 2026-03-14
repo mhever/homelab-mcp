@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Usage: deepseek "deepseek/deepseek-chat" "Your Prompt"
+
+. ~/.profile || true
+
+MODEL=$1
+PROMPT=$2
+
+# Escaping the prompt for JSON
+JSON_PROMPT=$(echo "$PROMPT" | jq -aRs .)
+
+echo "" >> /tmp/deepseek.log
+date >> /tmp/deepseek.log
+echo "$PROMPT" >> /tmp/deepseek.log
+
+RESPONSE=$(curl -s -X POST "https://openrouter.ai/api/v1/chat/completions" \
+  -H "Authorization: Bearer $OPENROUTER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"model\": \"$MODEL\",
+    \"messages\": [{\"role\": \"user\", \"content\": $JSON_PROMPT}]
+  }")
+echo "$RESPONSE" >> /tmp/deepseek.log
+
+# Extracting content and checking for errors
+echo "$RESPONSE" | jq -r '.choices[0].message.content // .error.message'
