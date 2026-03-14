@@ -4,12 +4,12 @@ A Go-based [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) serv
 
 This project is part of my professional portfolio, demonstrating Go development, systems engineering, and **agentic development workflows**.
 
-## 🚀 Current Status: Phase 2 (Complete)
+## 🚀 Current Status: Phase 3 (Complete)
 
 - [x] **Phase 0: Scaffold** - MCP SDK wiring & stdio transport.
 - [x] **Phase 1: System Tools** - `system_overview` and `system_disk` via `gopsutil`.
 - [x] **Phase 2: Docker Tools** - Container management & logs.
-- [ ] **Phase 3: Kubernetes Tools** - Pods, Events, and FluxCD status.
+- [x] **Phase 3: Kubernetes Tools** - Pods, Events, and FluxCD status.
 
 For the full implementation roadmap, see [plan.md](./plan.md).
 
@@ -27,6 +27,14 @@ For the full implementation roadmap, see [plan.md](./plan.md).
 | `docker_containers` | Lists all containers with name, image, status, and ports. |
 | `docker_container_logs` | Gets container logs; args: container name/ID, tail line count. |
 | `docker_container_action` | Start/stop/restart a container; args: container name/ID, action. |
+
+### Kubernetes Tools
+| Tool | Description |
+|------|-------------|
+| k8s_cluster_overview | Node status and per-namespace pod count summary |
+| k8s_pods | List/filter pods by namespace and status |
+| k8s_pod_logs | Get logs from a pod (args: namespace, pod, container, tail) |
+| k8s_events | List cluster events filtered by namespace and type |
 
 ## 🤖 Built with Agents
 

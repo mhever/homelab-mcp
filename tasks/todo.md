@@ -1,9 +1,10 @@
-# Phase 2: Docker Tools
+# Phase 3: Kubernetes Tools
 
-- [x] Create docker/client.go -- DockerClient interface + RealDockerClient impl
-- [x] Create docker/tools.go -- RegisterTools with docker_containers, docker_container_logs, docker_container_action
-- [x] Create docker/client_test.go -- mock-based tests (9 tests)
-- [x] Update main.go -- graceful Docker degradation with defer Close()
+- [x] Create k8s/types.go -- NodeInfo, PodInfo, EventInfo structs
+- [x] Create k8s/client.go -- K8sClient interface + RealK8sClient impl (InCluster + kubeconfig fallback)
+- [x] Create k8s/tools.go -- RegisterTools with k8s_cluster_overview, k8s_pods, k8s_pod_logs, k8s_events
+- [x] Create k8s/client_test.go -- mock-based tests (8 tests)
+- [x] Update main.go -- graceful k8s degradation + signal-aware shutdown context
 - [x] go mod tidy + go build ./...
-- [x] go test ./... (9/9 pass)
-- [x] deepseek-reviewer audit -- all findings resolved
+- [x] go test ./... (21/21 pass)
+- [x] deepseek-reviewer audit -- all 5 findings resolved
