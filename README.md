@@ -4,12 +4,14 @@ A Go-based [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) serv
 
 This project is part of my professional portfolio, demonstrating Go development, systems engineering, and **agentic development workflows**.
 
-## 🚀 Current Status: Phase 3 (Complete)
+## 🚀 Current Status: Phase 5 (Complete)
 
 - [x] **Phase 0: Scaffold** - MCP SDK wiring & stdio transport.
 - [x] **Phase 1: System Tools** - `system_overview` and `system_disk` via `gopsutil`.
 - [x] **Phase 2: Docker Tools** - Container management & logs.
-- [x] **Phase 3: Kubernetes Tools** - Pods, Events, and FluxCD status.
+- [x] **Phase 3: Kubernetes Tools** - Pods, Events, and cluster overview.
+- [x] **Phase 4: FluxCD Tool** - GitRepository and Kustomization reconciliation status.
+- [x] **Phase 5: Polish** - Makefile, systemd service unit, CI workflow, and documentation.
 
 For the full implementation roadmap, see [plan.md](./docs/plan.md).
 
@@ -31,22 +33,23 @@ For the full implementation roadmap, see [plan.md](./docs/plan.md).
 ### Kubernetes Tools
 | Tool | Description |
 |------|-------------|
-| k8s_cluster_overview | Node status and per-namespace pod count summary |
-| k8s_pods | List/filter pods by namespace and status |
-| k8s_pod_logs | Get logs from a pod (args: namespace, pod, container, tail) |
-| k8s_events | List cluster events filtered by namespace and type |
+| `k8s_cluster_overview` | Node status and per-namespace pod count summary |
+| `k8s_pods` | List/filter pods by namespace and status |
+| `k8s_pod_logs` | Get logs from a pod (args: namespace, pod, container, tail) |
+| `k8s_events` | List cluster events filtered by namespace and type |
+| `k8s_flux_status` | Show FluxCD GitRepository and Kustomization reconciliation status |
 
 ## 🤖 Built with Agents
 
-More on the agents:[agents.md](./docs/agents.md)
-Token consumption: [token_usag.md](./docs/token_usage.md)
+More on the agents: [agents.md](./docs/agents.md)
+Token consumption: [token_usage.md](./docs/token_usage.md)
 
 This repository is developed using a multi-agent orchestration pattern where Claude acts as the orchestrator and delegates to specialist subagents:
 
 | Role | Model | Task |
 |------|-------|------|
 | **Orchestrator** | Claude Sonnet 4.6 (Claude Code) | Planning, routing, and verification |
-| **Builder** | DeepSeek V3 (`deepseek-chat` via OpenRouter) | Code generation and file edits |
+| **Builder** | DeepSeek V3.2 (`deepseek/deepseek-v3.2` via OpenRouter) | Code generation and file edits |
 | **Reviewer** | DeepSeek R1 (`deepseek-r1` via OpenRouter) | Logic audits, race condition detection, security review |
 | **Tester** | Gemini Flash-Lite (`gemini-3.1-flash-lite-preview`) | Unit test and mock generation |
 | **Librarian** | Gemini Flash-Lite (`gemini-3.1-flash-lite-preview`) | README and documentation sync |
@@ -65,6 +68,18 @@ This "Hybrid AI" approach assigns each task to the model best suited for it, ena
 - **Go:** 1.25 or higher.
 - **Access:** User must be in the `docker` group for Docker tools.
 - **Kubeconfig:** Accessible at `~/.kube/config`.
+
+## 🚀 Quick Start
+
+```bash
+make build
+sudo make install
+# Enable as a service:
+sudo cp deploy/homelab-mcp.service /etc/systemd/system/
+sudo systemctl enable --now homelab-mcp
+```
+
+The project includes a `Makefile` with targets for `build`, `test`, `lint`, `install`, and `deploy`. A ready-to-use systemd service unit is provided at `deploy/homelab-mcp.service`.
 
 ## 💻 Usage
 

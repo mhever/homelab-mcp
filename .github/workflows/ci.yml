@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Cache Go Modules
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Verify go.sum
+        run: go mod tidy && git diff --exit-code go.sum
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run tests
+        run: go test ./... -race -count=1
+
+      - name: Build binary
+        run: go build -o homelab-mcp .
+
+  release:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Build release binary
+        run: GOOS=linux GOARCH=amd64 go build -ldflags='-s -w' -o homelab-mcp .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: homelab-mcp

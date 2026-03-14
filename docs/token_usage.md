@@ -49,6 +49,17 @@ This is the apples-to-apples comparison. Output tokens represent content each mo
 | Claude (orchestrator) | 30,995 | 27% |
 | **Total** | **~113,000** | |
 
+### Phase 5: Polish
+
+Makefile, systemd unit, CI workflow, README update.
+
+| Model | Role | Output Tokens |
+|-------|------|--------------|
+| Claude Sonnet 4.6 | Orchestrator | ~3,000 |
+| DeepSeek V3.2 | Coder (infra files) | ~2,500 |
+| Gemini Flash-Lite | Librarian (README + todo) | ~1,500 |
+| **Total output** | | **~7,000** |
+
 ## Cost
 
 | Provider | Phase 2 | Phase 3 | Total |

@@ -1,0 +1,16 @@
+[Unit]
+Description=homelab MCP server
+After=network.target
+
+[Service]
+Type=simple
+User=agent
+Environment=KUBECONFIG=/home/agent/.kube/config
+ExecStart=/usr/local/bin/homelab-mcp
+Restart=on-failure
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -17,3 +17,11 @@
 - [x] Add GetFluxStatus mock + 4 tests to k8s/client_test.go (Success, Empty, Error, NoReadyCondition)
 - [x] deepseek-reviewer audit -- 2 major findings resolved (error discrimination + test coverage)
 - [x] go build ./... + go test ./... (25/25 pass)
+
+# Phase 5: Polish
+
+- [x] Create Makefile -- build, test, lint, install, deploy targets
+- [x] Create deploy/homelab-mcp.service -- systemd unit for agent user
+- [x] Create .github/workflows/ci.yml -- lint, test (-race), build, release on v* tag
+- [x] Update README.md -- Phase 4/5 status, k8s_flux_status tool, quick start section
+- [x] go build ./... + go test ./... (25/25 pass)
