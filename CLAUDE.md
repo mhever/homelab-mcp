@@ -20,7 +20,7 @@
 - Keep changes localized. Only touch necessary files.
 - Resolve root causes; implement zero temporary workarounds.
 
-Current plan is in @plan.md
+Current plan is in @docs/plan.md
 
 # CLAUDE.md - homelab-mcp Orchestration Guide
 
