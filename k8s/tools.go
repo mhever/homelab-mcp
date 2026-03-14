@@ -13,20 +13,20 @@ import (
 type ClusterOverviewArgs struct{}
 
 type PodsArgs struct {
-	Namespace string `json:"namespace" jsonschema:"description=namespace to filter (empty for all)"`
-	Status    string `json:"status" jsonschema:"description=filter by status e.g. Running Pending Error"`
+	Namespace string `json:"namespace,omitempty" jsonschema:"namespace to filter (empty for all)"`
+	Status    string `json:"status,omitempty" jsonschema:"filter by status e.g. Running Pending Error"`
 }
 
 type PodLogsArgs struct {
-	Namespace string `json:"namespace" jsonschema:"description=pod namespace,required"`
-	Pod       string `json:"pod" jsonschema:"description=pod name,required"`
-	Container string `json:"container" jsonschema:"description=container name (optional for single-container pods)"`
-	Tail      int    `json:"tail" jsonschema:"description=number of log lines (default 100)"`
+	Namespace string `json:"namespace" jsonschema:"pod namespace"`
+	Pod       string `json:"pod" jsonschema:"pod name"`
+	Container string `json:"container,omitempty" jsonschema:"container name (optional for single-container pods)"`
+	Tail      int    `json:"tail,omitempty" jsonschema:"number of log lines (default 100)"`
 }
 
 type EventsArgs struct {
-	Namespace string `json:"namespace" jsonschema:"description=namespace to filter (empty for all namespaces)"`
-	Type      string `json:"type" jsonschema:"description=filter by type: Normal or Warning"`
+	Namespace string `json:"namespace,omitempty" jsonschema:"namespace to filter (empty for all namespaces)"`
+	Type      string `json:"type,omitempty" jsonschema:"filter by type: Normal or Warning"`
 }
 
 // RegisterTools registers the four Kubernetes tools with the MCP server.

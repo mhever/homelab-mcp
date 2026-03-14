@@ -16,13 +16,13 @@ const maxFrameSize = 10 * 1024 * 1024 // 10MB
 type DockerContainersArgs struct{}
 
 type ContainerLogsArgs struct {
-	Container string `json:"container" jsonschema:"description=container name or ID,required"`
-	Tail      string `json:"tail" jsonschema:"description=number of log lines to return (default 100)"`
+	Container string `json:"container" jsonschema:"container name or ID"`
+	Tail      string `json:"tail,omitempty" jsonschema:"number of log lines to return (default 100)"`
 }
 
 type ContainerActionArgs struct {
-	Container string `json:"container" jsonschema:"description=container name or ID,required"`
-	Action    string `json:"action" jsonschema:"description=action: start stop restart,required"`
+	Container string `json:"container" jsonschema:"container name or ID"`
+	Action    string `json:"action" jsonschema:"action: start stop restart"`
 }
 
 // RegisterTools registers the three Docker tools with the MCP server.
@@ -133,4 +133,3 @@ func HandleContainerAction(ctx context.Context, args ContainerActionArgs, client
 
 	return mcputil.TextResult(fmt.Sprintf("Action '%s' completed for container '%s'", args.Action, args.Container))
 }
-

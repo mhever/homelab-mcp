@@ -11,7 +11,7 @@ This project is part of my professional portfolio, demonstrating Go development,
 - [x] **Phase 2: Docker Tools** - Container management & logs.
 - [x] **Phase 3: Kubernetes Tools** - Pods, Events, and FluxCD status.
 
-For the full implementation roadmap, see [plan.md](./plan.md).
+For the full implementation roadmap, see [plan.md](./docs/plan.md).
 
 ## 🛠️ Features (Implemented)
 
@@ -37,6 +37,9 @@ For the full implementation roadmap, see [plan.md](./plan.md).
 | k8s_events | List cluster events filtered by namespace and type |
 
 ## 🤖 Built with Agents
+
+More on the agents:[agents.md](./docs/agents.md)
+Token consumption: [token_usag.md](./docs/token_usage.md)
 
 This repository is developed using a multi-agent orchestration pattern where Claude acts as the orchestrator and delegates to specialist subagents:
 
@@ -92,4 +95,4 @@ Example configuration, with Claude Desktop running on Windows 11:
 }
 ```
 
-Without specifing the env vars, Claude Desktop runs the process in a "sandbox" type environment. Without proper env configuration, the ssh binary included with Windows 11 was not able to even start up.
+Claude Desktop runs the process in a sandbox type environment. Without proper env configuration, the ssh binary included with Windows 11 was not able to even start up.
