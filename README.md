@@ -1,5 +1,7 @@
 # homelab-mcp
 
+Architectural TL;DR: A Go-based MCP server for mixed-workload home labs (k3s, Docker, Linux) built as an architectural study in multi-model agent orchestration. It utilizes a "blind subagent" pattern where Claude orchestrates DeepSeek (V3/R1) and Gemini to manage context flow and observability. The entire implementation was delivered with high transparency for a total DeepSeek API cost of approximately $0.08, using Claude paid subscription and Gemini free tier.
+
 A Go-based [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server designed for home lab operations. Unlike generic Kubernetes servers, `homelab-mcp` is built for mixed-workload environments, exposing tools for **k3s**, **Docker**, and **Bare-metal system metrics** through a single interface.
 
 This project is part of my professional portfolio, demonstrating Go development, systems engineering, and **agentic development workflows**.
