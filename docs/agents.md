@@ -1,5 +1,7 @@
 # AGENTS.md — Orchestration Setup for homelab-mcp
 
+Note: this setup was deliberately over-scoped for a project of this size. The goal was hands-on experience with multi-vendor orchestration, not optimal delivery speed.
+
 This document describes how this project was built: which AI models handle which roles, how they hand off to each other, the tooling that connects them, and the real lessons learned from running this in production.
 
 The `.claude/agents/` directory shows *what* each agent does. This document explains *why* the setup is structured this way.

@@ -4,6 +4,8 @@ A Go-based [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) serv
 
 This project is part of my professional portfolio, demonstrating Go development, systems engineering, and **agentic development workflows**.
 
+Note: this setup was deliberately over-scoped for a project of this size. The goal was hands-on experience with multi-vendor orchestration, not optimal delivery speed.
+
 ## 🚀 Current Status: Phase 5 (Complete)
 
 - [x] **Phase 0: Scaffold** - MCP SDK wiring & stdio transport.

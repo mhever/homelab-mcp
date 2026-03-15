@@ -11,7 +11,7 @@ Delegating execution to sub-agents trades initial development velocity for stric
 * **Context Containment:** The orchestrator's context window remains uncluttered. By offloading execution, the orchestrator only needs to hold the high-level system state, preventing context degradation over long sessions.
 * **Security & Least Privilege (RBAC):** Permissions can be tightly scoped. An orchestrator might have read-only access to architecture documents, while a specialized "builder" agent only has write access to a specific code repository. This limits the blast radius if an agent is compromised or hallucinates maliciously.
 * **Vendor Resilience:** Decoupling roles prevents vendor lock-in. If a specific provider suffers an outage, deprecates a model, or hikes prices, a single sub-agent node can be swapped out without re-engineering the entire pipeline.
-* **Parallel Execution (Fan-out):** An orchestrator can delegate discrete tasks simultaneously. One agent writes the core Go logic, another generates unit tests, and a third drafts the OpenAPI specs.
+* **Parallel Execution (Fan-out):** An orchestrator can delegate discrete tasks simultaneously. One agent writes the core Go logic, another generates unit tests, and a third drafts the OpenAPI specs. Note: this is a theoretical advantage, the implemented logic is sequential.
 * **Fault Isolation:** If a sub-agent fails or outputs garbage, the orchestrator can evaluate the failure, adjust the prompt, and retry the specific node without crashing the entire workflow.
 
 ## Disadvantages & Operational Complexities
