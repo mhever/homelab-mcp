@@ -1,0 +1,45 @@
+{
+  "id": "gen-1773534400-0B1s5jN8v57OPC8VOZ56",
+  "object": "chat.completion",
+  "created": 1773534400,
+  "model": "deepseek/deepseek-v3.2-20251201",
+  "provider": "DeepInfra",
+  "system_fingerprint": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "```go\npackage main\n\nimport (\n\t\"context\"\n\t\"log\"\n\t\"os\"\n\t\"os/signal\"\n\t\"syscall\"\n\n\t\"github.com/mhever/homelab-mcp/docker\"\n\t\"github.com/mhever/homelab-mcp/internal/mcputil\"\n\t\"github.com/mhever/homelab-mcp/k8s\"\n\t\"github.com/mhever/homelab-mcp/system\"\n\t\"github.com/modelcontextprotocol/go-sdk/mcp\"\n)\n\ntype VersionArgs struct{}\n\nfunc main() {\n\tlog.SetOutput(os.Stderr)\n\n\tserver := mcp.NewServer(&mcp.Implementation{\n\t\tName:    \"homelab-mcp\",\n\t\tVersion: \"0.1.0\",\n\t}, nil)\n\n\t// System tools (always available)\n\tsysClient := &system.GopsutilClient{}\n\tsystem.RegisterTools(server, sysClient)\n\n\t// Version tool\n\tmcp.AddTool(server, &mcp.Tool{\n\t\tName:        \"version\",\n\t\tDescription: \"Returns the server version\",\n\t}, func(ctx context.Context, req *mcp.CallToolRequest, args VersionArgs) (*mcp.CallToolResult, any, error) {\n\t\treturn mcputil.TextResult(\"1.0.0\")\n\t})\n\n\t// Docker tools (graceful skip if unavailable)\n\tdockerClient, err := docker.NewRealDockerClient()\n\tif err != nil {\n\t\tlog.Printf(\"Docker unavailable, skipping docker tools: %v\", err)\n\t} else {\n\t\tdefer dockerClient.Close()\n\t\tdocker.RegisterTools(server, dockerClient)\n\t\tlog.Println(\"Docker tools registered\")\n\t}\n\n\t// Kubernetes tools (graceful skip if unavailable)\n\tk8sClient, err := k8s.NewRealK8sClient()\n\tif err != nil {\n\t\tlog.Printf(\"Kubernetes unavailable, skipping k8s tools: %v\", err)\n\t} else {\n\t\tk8s.RegisterTools(server, k8sClient)\n\t\tlog.Println(\"Kubernetes tools registered\")\n\t}\n\n\tlog.Println(\"homelab-mcp server starting on stdio\")\n\tctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)\n\tdefer stop()\n\tif err := server.Run(ctx, &mcp.StdioTransport{}); err != nil {\n\t\tlog.Fatalf(\"server error: %v\", err)\n\t}\n}\n```",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 646,
+    "completion_tokens": 517,
+    "total_tokens": 1163,
+    "cost": 0.0003561,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 64,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0003561,
+      "upstream_inference_prompt_cost": 0.00015964,
+      "upstream_inference_completions_cost": 0.00019646
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}
